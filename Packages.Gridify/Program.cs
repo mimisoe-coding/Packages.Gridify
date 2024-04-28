@@ -23,6 +23,41 @@ app.MapGet("/blog/{pageNo}/{pageSize}", async (int pageNo, int pageSize, AppDbCo
         Page = pageNo,
         PageSize = pageSize,
     };
-    return Results.Ok(await db.Blogs.GridifyAsync(query));  
+    return Results.Ok(await db.Blogs.GridifyAsync(query));
 });
+
+app.MapGet("/blog-generate", async (AppDbContext db) =>
+{
+    //for (int i = 0; i < 100; i++)
+    //{
+    //    await db.Blogs.AddAsync(new BlogDataModel
+    //    {
+    //        BlogTitle = (i + 1) + "title",
+    //        BlogAuthor = (i + 1) + "Author",
+    //        BlogContent = (i + 1) + "content",
+    //    });
+    //}
+    await db.Blogs.AddRangeAsync(Enumerable.Range(1, 10).Select(x =>
+        new BlogDataModel()
+        {
+            BlogTitle = x + "title",
+            BlogAuthor = x + "Author",
+            BlogContent = x + "content",
+        }
+    ));
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+//Filter
+
+app.MapGet("/blog/{id}", async (int id, AppDbContext db) =>
+{
+    var query = new GridifyQuery()
+    {
+        Filter = $"BlogId = {id}"
+    };
+    return Results.Ok(await db.Blogs.GridifyAsync(query));
+});
+
 app.Run();
